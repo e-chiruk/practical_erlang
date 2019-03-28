@@ -3,6 +3,12 @@
 -export([sample_champ/0, get_stat/1, filter_sick_players/1, make_pairs/2]).
 -include_lib("eunit/include/eunit.hrl").
 
+-record(stat, {
+              num_players = 0,
+              total_age = 0,
+              total_rating = 0
+}).
+
 
 sample_champ() ->
     [
@@ -57,11 +63,26 @@ sample_champ() ->
        {player, "Pure Horror",     31,  90, 43}
       ]}
     ].
-
-
 get_stat(Champ) ->
-    {0, 0, 0.0, 0.9}.
+  TotalStat = get_total_stat(Champ, #stat{}),
+  #stat{num_players = NP, total_age = TA, total_rating = TR} = TotalStat,
+  {NM, NP, TA/NP, TR/NP}.
 
+
+get_total_stat([], Acc) -> Acc;
+get_total_stat([Team | Tail], Acc) ->
+  {team, _, Players} = Team,
+  Acc1 = lists:foldl(
+    fun(Player, Acc) ->
+      {player, _, Age, Rating, _} = Player,
+      #stat{num_players = NP, total_age = TA, total_rating = TR} = Acc,
+      Acc1 = Acc#stat{num_teams = NT, num_players = NP + 1, total_age = TA + Age, total_rating = TR + Rating},
+      Acc1
+    end,
+    Acc,
+    Players
+  ),
+  get_total_stat(Tail, Acc2).
 
 get_stat_test() ->
     ?assertEqual({5,40,24.85,242.8}, get_stat(sample_champ())),
