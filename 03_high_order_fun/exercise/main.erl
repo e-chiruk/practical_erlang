@@ -66,31 +66,39 @@ sample_champ() ->
 get_stat(Champ) ->
   TotalStat = get_total_stat(Champ, #stat{}),
   #stat{num_players = NP, total_age = TA, total_rating = TR} = TotalStat,
-  {NM, NP, TA/NP, TR/NP}.
+  {length(Champ), NP, TA/NP, TR/NP}.
 
 
 get_total_stat([], Acc) -> Acc;
 get_total_stat([Team | Tail], Acc) ->
   {team, _, Players} = Team,
   Acc1 = lists:foldl(
-    fun(Player, Acc) ->
+    fun(Player, FunAcc) ->
       {player, _, Age, Rating, _} = Player,
-      #stat{num_players = NP, total_age = TA, total_rating = TR} = Acc,
-      Acc1 = Acc#stat{num_teams = NT, num_players = NP + 1, total_age = TA + Age, total_rating = TR + Rating},
-      Acc1
+      #stat{num_players = NP, total_age = TA, total_rating = TR} = FunAcc,
+      FunAcc1 = FunAcc#stat{num_players = NP + 1, total_age = TA + Age, total_rating = TR + Rating},
+      FunAcc1
     end,
     Acc,
     Players
   ),
-  get_total_stat(Tail, Acc2).
+  get_total_stat(Tail, Acc1).
 
 get_stat_test() ->
     ?assertEqual({5,40,24.85,242.8}, get_stat(sample_champ())),
     ok.
 
-
 filter_sick_players(Champ) ->
-    Champ.
+  Teams = filter_sick_players(Champ, []),
+  lists:filter(fun({team, _, Players}) -> length(Players) >= 5 end, Teams).
+
+filter_sick_players([], Acc) -> lists:reverse(Acc);
+filter_sick_players([Team | Tail], Acc) ->
+  filter_sick_players(Tail, [filter_team(Team) | Acc]).
+
+filter_team({team, Name, Players}) ->
+  HealthyPlayers = lists:filter(fun({player, _, _, _, Health}) -> Health >= 50 end, Players),
+  {team, Name, HealthyPlayers}.
 
 
 filter_sick_players_test() ->
@@ -126,7 +134,11 @@ filter_sick_players_test() ->
 
 
 make_pairs(Team1, Team2) ->
-    [].
+  {team, _, Players1} = Team1,
+  {team, _, Players2} = Team2,
+  [{Name1, Name2} || {player, Name1, _, Rating1, _} <- Players1,
+    {player, Name2, _, Rating2, _} <- Players2,
+    Rating1 + Rating2 > 600].
 
 
 make_pairs_test() ->
