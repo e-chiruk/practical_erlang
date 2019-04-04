@@ -12,7 +12,7 @@ init() ->
     State.
 
 get_home(Link) ->
-  Regex = "^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",
+  Regex = "^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}\/",
   case re:run(Link, Regex, [{capture, first, list}]) of
     {match, [HomeLink]} -> HomeLink;
     nomatch -> {error, "Incorrect link"}
