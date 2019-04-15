@@ -72,12 +72,33 @@ get_users_list(Server, RoomId) ->
 
 
 send_message(Server, RoomId, UserName, Message) ->
-    ok.
+    call(Server, {send_message, RoomId, UserName, Message}).
 
 
 get_messages_history(Server, RoomId) ->
-    ok.
+    call(Server, {messages_history, RoomId}).
 
+handle_call({send_message, RoomId, UserName, Message}, State) ->
+    #state{rooms = Rooms} = State,
+    case maps:find(RoomId, Rooms) of
+        {ok, Room} -> #room{users = Users, history = History} = Room,
+                      case lists:member(UserName, Users) of
+                        false -> {{error, user_not_in_room}, State};
+                        true ->
+                          Msg = {UserName, Message},
+                          Room2 = Room#room{history = [Msg | History]},
+                          {ok, State#state{rooms = maps:update(RoomId, Room2, Rooms)}}
+                      end;
+        error -> {{error, room_not_found}, State}
+    end;
+
+handle_call({messages_history, RoomId}, State) ->
+    #state{rooms = Rooms} = State,
+    case maps:find(RoomId, Rooms) of
+          {ok, Room} -> #room{history = History} = Room,
+                        {{ok, History}, State};
+          error -> {{error, room_not_found}, State}
+    end;
 
 handle_call({create_room, RoomName}, State) ->
     #state{max_rooms = MaxRooms, rooms = Rooms} = State,
