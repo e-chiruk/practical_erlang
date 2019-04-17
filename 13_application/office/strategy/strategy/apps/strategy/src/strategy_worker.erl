@@ -29,41 +29,16 @@
   user_name
 }).
 
-%%%===================================================================
-%%% API
-%%%===================================================================
-
-%%--------------------------------------------------------------------
-%% @doc
-%% Starts the server
-%%
-%% @end
-%%--------------------------------------------------------------------
 
 start_link(UserId, UserName) ->
   gen_server:start_link(?MODULE, {UserId, UserName}, []).
 
-%%%===================================================================
-%%% gen_server callbacks
-%%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Initializes the server
-%%
-%% @spec init(Args) -> {ok, State} |
-%%                     {ok, State, Timeout} |
-%%                     ignore |
-%%                     {stop, Reason}
-%% @end
-%%--------------------------------------------------------------------
--spec(init(Args :: term()) ->
-  {ok, State :: #state{}} | {ok, State :: #state{}, timeout() | hibernate} |
-  {stop, Reason :: term()} | ignore).
 init({UserId, UserName}) ->
   State = #state{user_id = UserId, user_name = UserName},
   lager:info("init ~p ~p", [self(), State]),
+  lager:warning("this is warning"),
+  lager:error("this is error"),
   {ok, State}.
 
 %%--------------------------------------------------------------------

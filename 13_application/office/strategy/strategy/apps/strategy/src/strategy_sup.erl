@@ -37,19 +37,21 @@ init([]) ->
         period => 60},
 
     ChildSpecifications =
-        [#{id => strategy_worker1,
-            start => {strategy_worker, start_link, [1, "Bob"]},
+        [
+        #{
+            id => st_player_sup,
+            start => {st_player_sup, start_link, []},
+            restart => permanent,
+            shutdown => 2000,
+            type => supervisor,
+            modules => [st_player_sup]},
+        #{
+            id => st_player_storage,
+            start => {st_player_storage, start_link, []},
             restart => permanent,
             shutdown => 2000,
             type => worker,
-            modules => [strategy_worker]
-        },
-        #{id => strategy_worker2,
-            start => {strategy_worker, start_link, [2, "Bill"]},
-            restart => permanent,
-            shutdown => 2000,
-            type => worker,
-            modules => [strategy_worker]}],
+            modules => [st_player_storage]}],
     {ok, {SupervisorSpecification, ChildSpecifications}}.
 
 %%====================================================================
